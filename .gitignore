@@ -3,3 +3,5 @@ swarm_genom_db/
 *.fasta
 *.kraken
 *.kreport
+*.krona
+*.html

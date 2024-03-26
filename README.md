@@ -1,10 +1,9 @@
 # Analysis of unmapped reads with kraken2 #
 
 
-There is often interesting biological information ...blalba
+There is often interesting biological information left to explore in the reads that did not map to a reference genome (e.g., Chrisman et al. 2022). This document will show you the first steps of how to do such an anylsis of unmapped reads using the software Kraken 2.
 
-We assume we have miniconda installed, and we have a miniconda environment called "kraken" in which kraken2 is installed.
-
+Here, we assume that we have miniconda installed, and that we have a miniconda environment called "kraken" in which Kraken 2 and KrakenTools are installed.
 
 First we activate the miniconda environment (named "kraken") in which we have installed the kraken software so we can use it:
 
@@ -12,78 +11,20 @@ First we activate the miniconda environment (named "kraken") in which we have in
 conda activate kraken
 ```
 
-Now we first have to download and build a database containing the *l*-mers and the taxonomic information. We are using the *kraken2-build --standard* command for that. This command will download and build the standard Kraken 2 database. Afterwards we can use that database to classify sequencing reads as belonging to specific taxa. You need to replace $DBPATH with the path to where you want to save the database and the name you want to give the database. You can also choose the number of threads you  want kraken2 to use. Just replace $THREADNUM with the number of threads you want to use, e.g. 20. The database building will take a while.
+Now we first have to download and build a database containing the *l*-mers and the taxonomic information. We could (i) download an already built database from https://benlangmead.github.io/aws-indexes/k2, (ii) use the *kraken2-build --standard* command, or (iii) build our own custom database with all the taxa we want.
+For an easy start into the usage of Kraken 2 I will describe how to use a pre-build database, i.e. (iii). Note, however, that it might be necessary to build your own custom database to get the best and most meaningful results.
+
+First, we just download an already made database from the this page: https://benlangmead.github.io/aws-indexes/k2
+For example, we can download the PlusPFP-16 database (just click on the ".tar.gz" in that row). After downloading it we need to unzip the tar ball:
 
 ```sh
-kraken2-build --standard --threads $THREADNUM --db $DBPATH
-```
-
-But we can also build a custom database ourselves. For this, we first download the taxonomy information and the information for the different taxa we want to have in our database:
-
-```sh
-
-# download taxonomy
-kraken2-build --download-taxonomy --threads $THREADNUM --db $DBPATH
-
-# download most dbs
-echo 'archaea'
-kraken2-build --download-library archaea --threads $THREADNUM --db $DBPATH
-
-echo 'bacteria'
-kraken2-build --download-library bacteria --threads $THREADNUM --db $DBPATH
-
-echo 'plasmid'
-kraken2-build --download-library plasmid --threads $THREADNUM --db $DBPATH
-
-echo 'viral'
-kraken2-build --download-library viral --threads $THREADNUM --db $DBPATH
-
-echo 'human'
-kraken2-build --download-library human --threads $THREADNUM --db $DBPATH
-
-echo 'fungi'
-kraken2-build --download-library fungi --threads $THREADNUM --db $DBPATH
-
-echo 'plant'
-kraken2-build --download-library plant --threads $THREADNUM --db $DBPATH
-
-echo 'protozoa'
-kraken2-build --download-library protozoa --threads $THREADNUM --db $DBPATH
-
-echo 'UniVec_Core'
-kraken2-build --download-library UniVec_Core --threads $THREADNUM --db $DBPATH
-
-
-```
-
-Then we build the database:
-
-
-```sh
-kraken2-build --build --db $DBPATH --threads $THREADNUM
-
-```
-
-
-However, the easiest way is to just download an already made database from the this page: https://benlangmead.github.io/aws-indexes/k2
-
-For example, we could download the PlusPFP-16 database (just click on the ".tar.gz" in that row). After downloading it we need to unzip the tar ball:
-
-```sh
-
 tar -xvzf k2_pluspfp_16gb_20240112.tar.gz
-
 ```
-
-We can now classify the reads from the file of interest using Kraken 2. Let's say we want to classify the unmapped reads from whole-genome sequencing of a great tit.
-
+Now we have the database we can compare our unmapped reads to. As an example, I will now classify the unmapped reads from whole-genome sequencing project of a great tit (*Parus major*). Form this we use the *kraken2* command.
+You need to replace $DBPATH with the path to where you have saved the database and the name you gave the database. You can also choose the number of threads you  want kraken2 to use. Just replace $THREADNUM with the number of threads you want to use, e.g. 20. The flags *--classified-out* and
+*--unclassified-out* are optional.
 
 ```sh
-
-
-
-
-
 kraken2 \
 --db ${DBPATH} \
 --output ${OUTPUTNAME} \
@@ -94,13 +35,15 @@ kraken2 \
 --confidence 0.1 \
 --threads ${THREADNUM} \
 ${INPUTNAME}
-
 ```
 
+This command will take a while and it will give you a report and a kraken-output. The output (.kraken ending) lists all the reads and as what they were classified. The Report (.kreport ending) is the most useful one, because you can see how many reads were classified as what taxon.
+We can now use the script *kreport2krona.py* from KrakenTools to make a nice visualization of the results.
 
-
-
-
+```sh
+python3 kreport2krona.py -r REPORTNAME -o SAMPLE.krona
+ktImportText SAMPLE.krona -o SAMPLE.krona.html
+```
 
 
 
