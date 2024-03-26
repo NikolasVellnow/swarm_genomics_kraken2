@@ -24,7 +24,7 @@ tar -xvzf k2_pluspfp_16gb_20240112.tar.gz
 Now we have the database we can compare our unmapped reads to.
 
 ## Classifying reads ##
-As an example, I will now classify the unmapped reads from whole-genome sequencing project of a great tit (*Parus major*). Form this we use the *kraken2* command.
+For classifying the unmapped reads from a whole-genome sequencing project we use the *kraken2* command.
 You need to replace $DBPATH with the path to where you have saved the database and the name you gave the database. You can also choose the number of threads you  want kraken2 to use. Just replace $THREADNUM with the number of threads you want to use, e.g. 20. The flags *--classified-out* and
 *--unclassified-out* are optional.
 
